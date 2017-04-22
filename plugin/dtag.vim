@@ -26,6 +26,7 @@ if !exists('g:tagbar_ctags_exe')
     endif
 endif
 
+" current file's tags list
 let s:tagslist = []
 
 function! s:GenerateTags(fname)
@@ -48,10 +49,15 @@ function! s:SplitTags(strtags)
 endfunction
 
 function! ShowTags()
+    let cursorin = dtagui#SaveCursorIn()
     let fname = fnamemodify(bufname('%'), ':p')
+    call dtagui#OpenTagWindow(30, 0)
     let tags = s:GenerateTags(fname)
     call s:SplitTags(tags)
+    let names = []
     for tag in s:tagslist
-        echo tag
+        call add(names, tag.name)
     endfor
+    call dtagui#RefreshUI(names)
+    call dtagui#ResetCursorIn(cursorin)
 endfunction
