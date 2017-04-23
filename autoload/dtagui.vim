@@ -51,3 +51,42 @@ function! dtagui#RefreshUI(list)
     setlocal nomodifiable
     call winrestview(saveview)
 endfunction
+
+" Function: GetFunctionsList
+" from tags list get functions list
+function! s:GetFunctionsList(tagslist)
+    let funclist = []
+    for tag in a:tagslist
+        if tag.kind == 'f'
+            call add(funclist, "\t" . tag.name)
+        endif
+    endfor
+    return funclist
+endfunction
+
+" Function: GetVariablesList
+" from tags list get variables list
+function! s:GetVariablesList(tagslist)
+    let varslist = []
+    for tag in a:tagslist
+        if tag.kind == 'v'
+            call add(varslist, "\t" . tag.name)
+        endif
+    endfor
+    return varslist
+endfunction
+
+function! dtagui#GetDisplayList(tagslist)
+    let funclist = s:GetFunctionsList(a:tagslist)
+    let varslist = s:GetVariablesList(a:tagslist)
+    let dislist = []
+    if !empty(funclist)
+        call add(dislist, 'Functions:')
+        call extend(dislist, funclist)
+    endif
+    if !empty(varslist)
+        call add(dislist, 'Variables:')
+        call extend(dislist, varslist)
+    endif
+    return dislist
+endfunction
