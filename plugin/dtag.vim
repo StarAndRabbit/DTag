@@ -61,3 +61,23 @@ function! ShowTags()
     call dtagui#RefreshUI(names)
     call dtagui#ResetCursorIn(cursorin)
 endfunction
+
+function! s:ToggleTagListWin()
+    if bufwinnr('__TagList__') == -1
+        let cursorin = dtagui#SaveCursorIn()
+        let fname = fnamemodify(bufname('%'), ':p')
+        call dtagui#OpenTagWindow(30, 0)
+        let tags = s:GenerateTags(fname)
+        call s:SplitTags(tags)
+        let names = []
+        for tag in s:tagslist
+            call add(names, tag.name)
+        endfor
+        call dtagui#RefreshUI(names)
+        call dtagui#ResetCursorIn(cursorin)
+    else
+        call dtagui#CloseTagWindow()
+    endif
+endfunction
+
+command! -nargs=0 DTagToggle call s:ToggleTagListWin()
