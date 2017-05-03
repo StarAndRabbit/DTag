@@ -26,6 +26,14 @@ if !exists('g:tagbar_ctags_exe')
     endif
 endif
 
+" autocommand to auto refresh tags
+augroup refreshtaglist
+    au!
+    au WinEnter * call s:RefreshTags()
+    au BufReadPost * call s:RefreshTags()
+    au BufWritePost * call s:RefreshTags()
+augroup END
+
 " current file's tags list
 let s:tagslist = []
 
@@ -53,16 +61,35 @@ function! s:ToggleTagListWin()
         let cursorin = dtagui#SaveCursorIn()
         let fname = fnamemodify(bufname('%'), ':p')
         call dtagui#OpenTagWindow(30, 0)
-        let tags = s:GenerateTags(fname)
-        call s:SplitTags(tags)
-"        let names = []
-"        for tag in s:tagslist
-"            call add(names, tag.name)
-"        endfor
-        call dtagui#RefreshUI(dtagui#GetDisplayList(s:tagslist))
+
+        " file exist and not directory
+        if getfsize(fname) != -1 && getfsize(fname) != 0
+            let tags = s:GenerateTags(fname)
+            call s:SplitTags(tags)
+            call dtagui#RefreshUI(dtagui#GetDisplayList(s:tagslist))
+        endif
         call dtagui#ResetCursorIn(cursorin)
     else
         call dtagui#CloseTagWindow()
+    endif
+endfunction
+
+function! s:RefreshTags()
+    if dtagui#IsTagWindowOpened() == 0
+        return
+    else
+        let cursorin = dtagui#SaveCursorIn()
+        let fname = fnamemodify(bufname('%'), ':p')
+        
+        "file exist and not directory
+        if getfsize(fname) != -1 && getfsize(fname) != 0
+            call win_gotoid(win_getid(bufwinnr('__TagList__')))
+            let tags = s:GenerateTags(fname)
+            let s:tagslist = []
+            call s:SplitTags(tags)
+            call dtagui#RefreshUI(dtagui#GetDisplayList(s:tagslist))
+            call dtagui#ResetCursorIn(cursorin)
+        endif
     endif
 endfunction
 
