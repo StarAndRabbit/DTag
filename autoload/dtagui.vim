@@ -10,6 +10,8 @@ function! dtagui#OpenTagWindow(winsize, winpos)
     setlocal noswapfile
     setlocal bufhidden=delete
     setlocal nomodifiable 
+    setlocal nowrap
+    setlocal nonumber
 endfunction
 
 " Function: CloseTagWindow
@@ -24,6 +26,16 @@ function! dtagui#CloseTagWindow()
         execute('q!')
     endif
     call dtagui#ResetCursorIn(cursorin)
+endfunction
+
+" Function: IsTagWindowOpened
+" if tag window opened, return 1, else return 0
+function! dtagui#IsTagWindowOpened()
+    if bufwinnr('__TagList__') == -1
+        return 0
+    else
+        return 1
+    endif
 endfunction
 
 " Function: SaveCursorIn
