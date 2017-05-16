@@ -37,6 +37,11 @@ augroup END
 " current file's tags list
 let s:tagslist = []
 
+" current file's tags dic
+let s:tagsdic = {}
+
+let g:filename = ''
+
 function! s:GenerateTags(fname)
     let ctags_args = ' -f - --format=2 --excmd=pattern --fields=nksaz --extra= --sort=yes '
     let ctags_cmd = g:tagbar_ctags_exe . ctags_args . shellescape(a:fname)
@@ -53,6 +58,7 @@ function! s:SplitTags(strtags)
         let dictag.kind = split(listtag[3], ':')[1]
         let dictag.line = split(listtag[4], ':')[1]
         call add(s:tagslist, deepcopy(dictag))
+        let s:tagsdic[dictag.name] = deepcopy(dictag)
     endfor
 endfunction
 
@@ -60,6 +66,7 @@ function! s:ToggleTagListWin()
     if bufwinnr('__TagList__') == -1
         let cursorin = dtagui#SaveCursorIn()
         let fname = fnamemodify(bufname('%'), ':p')
+        let g:filename = bufname('')
         call dtagui#OpenTagWindow(30, 0)
 
         " file exist and not directory
@@ -86,11 +93,21 @@ function! s:RefreshTags()
             call win_gotoid(win_getid(bufwinnr('__TagList__')))
             let tags = s:GenerateTags(fname)
             let s:tagslist = []
+            let s:tagsdic = {}
             call s:SplitTags(tags)
             call dtagui#RefreshUI(dtagui#GetDisplayList(s:tagslist))
             call dtagui#ResetCursorIn(cursorin)
+            let g:filename = bufname('')
         endif
     endif
 endfunction
 
 command! -nargs=0 DTagToggle call s:ToggleTagListWin()
+
+function! GetTagLine(tagname)
+    if has_key(s:tagsdic, a:tagname)
+        return s:tagsdic[a:tagname].line
+    else
+        return
+    endif
+endfunction
