@@ -9,7 +9,7 @@ function! dtagui#OpenTagWindow(winsize, winpos)
     setlocal buftype=nofile
     setlocal noswapfile
     setlocal bufhidden=delete
-    setlocal nomodifiable 
+    setlocal nomodifiable
     setlocal nowrap
     setlocal nonumber
 endfunction
@@ -101,4 +101,8 @@ function! dtagui#GetDisplayList(tagslist)
         call extend(dislist, varslist)
     endif
     return dislist
+endfunction
+
+function! dtagui#GetNameFromLine(line)
+    return substitute(getline(a:line), '\v\t', '', "")
 endfunction
