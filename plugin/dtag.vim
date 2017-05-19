@@ -41,6 +41,7 @@ let s:tagslist = []
 let s:tagsdic = {}
 
 let g:filename = ''
+let g:filetype = ''
 
 function! s:GenerateTags(fname)
     let ctags_args = ' -f - --format=2 --excmd=pattern --fields=nksaz --extra= --sort=yes '
@@ -51,12 +52,22 @@ endfunction
 function! s:SplitTags(strtags)
     let dictag = {}
     for tag in split(a:strtags, '\n')
+
+        " split each tag
         let listtag = split(tag, '\t')
+
         let dictag.name = listtag[0]
         let dictag.path = listtag[1]
         let dictag.cmd = listtag[2]
-        let dictag.kind = split(listtag[3], ':')[1]
-        let dictag.line = split(listtag[4], ':')[1]
+
+        " split all attributes
+        let vartag = listtag[3:]
+        for var in vartag
+            let attr = split(var, ':')[0]
+            let value = join(split(var, ':')[1:])
+            let dictag[attr] = value
+        endfor
+
         call add(s:tagslist, deepcopy(dictag))
         let s:tagsdic[dictag.name] = deepcopy(dictag)
     endfor
@@ -67,13 +78,15 @@ function! s:ToggleTagListWin()
         let cursorin = dtagui#SaveCursorIn()
         let fname = fnamemodify(bufname('%'), ':p')
         let g:filename = bufname('')
+        let g:filetype = &filetype
         call dtagui#OpenTagWindow(30, 0)
 
         " file exist and not directory
         if getfsize(fname) != -1 && getfsize(fname) != 0
             let tags = s:GenerateTags(fname)
             call s:SplitTags(tags)
-            call dtagui#RefreshUI(dtagui#GetDisplayList(s:tagslist))
+            call dtagui#GenerateDisplayList(s:tagslist)
+            call dtagui#RefreshUI()
         endif
         call dtagui#ResetCursorIn(cursorin)
     else
@@ -89,25 +102,19 @@ function! s:RefreshTags()
         let fname = fnamemodify(bufname('%'), ':p')
         
         "file exist and not directory
-        if getfsize(fname) != -1 && getfsize(fname) != 0
+        if getfsize(fname) != -1 && getfsize(fname) != 0 && bufname('') != g:filename
             call win_gotoid(win_getid(bufwinnr('__TagList__')))
             let tags = s:GenerateTags(fname)
             let s:tagslist = []
             let s:tagsdic = {}
             call s:SplitTags(tags)
-            call dtagui#RefreshUI(dtagui#GetDisplayList(s:tagslist))
+            call dtagui#GenerateDisplayList(s:tagslist)
+            call dtagui#RefreshUI()
             call dtagui#ResetCursorIn(cursorin)
             let g:filename = bufname('')
+            let g:filetype = &filetype
         endif
     endif
 endfunction
 
 command! -nargs=0 DTagToggle call s:ToggleTagListWin()
-
-function! GetTagLine(tagname)
-    if has_key(s:tagsdic, a:tagname)
-        return s:tagsdic[a:tagname].line
-    else
-        return
-    endif
-endfunction
