@@ -43,6 +43,11 @@ let s:tagsdic = {}
 let g:filename = ''
 let g:filetype = ''
 
+function! s:ResetAll()
+    let s:tagslist = []
+    let s:tagsdic = {}
+endfunction
+
 function! s:GenerateTags(fname)
     let ctags_args = ' -f - --format=2 --excmd=pattern --fields=nksaz --extra= --sort=yes '
     let ctags_cmd = g:tagbar_ctags_exe . ctags_args . shellescape(a:fname)
@@ -50,6 +55,7 @@ function! s:GenerateTags(fname)
 endfunction
 
 function! s:SplitTags(strtags)
+    call s:ResetAll()
     let dictag = {}
     for tag in split(a:strtags, '\n')
 
