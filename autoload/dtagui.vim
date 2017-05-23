@@ -35,6 +35,7 @@ function! dtagui#CloseTagWindow()
         execute('q!')
     endif
     call dtagui#ResetCursorIn(cursorin)
+    call s:ResetDisplayList()
 endfunction
 
 " Function: IsTagWindowOpened
@@ -90,6 +91,7 @@ endfunction
 function! s:ResetDisplayList()
     let s:displaylist = []
     let s:titlelist = []
+    let s:classifiedtags = {}
 endfunction
 
 " Function: GenerateDisplayList
@@ -126,10 +128,20 @@ function! s:GetTitleContent(title, tagsdic)
     endif
 endfunction
 
+" Function: Insert
+" insert dstlist into srclist in index
 function! s:Insert(srclist, dstlist, index)
     let tmpleft = a:srclist[:a:index]
     let tmpright = a:srclist[a:index+1:]
     return tmpleft + a:dstlist + tmpright
+endfunction
+
+" Function: Remove
+" remove value from findex to tindex in srclist
+function! s:Remove(srclist, findex, tindex)
+    let tmpleft = a:srclist[:a:findex-1]
+    let tmpright = a:srclist[a:tindex:]
+    return tmpleft + tmpright
 endfunction
 
 function! s:GetDepth(str)
@@ -185,5 +197,23 @@ function! dtagui#OpenTitle(line)
         endif
     endfor
     let s:displaylist = s:Insert(s:displaylist, disaddlist, index)
+    call dtagui#RefreshUI()
+endfunction
+
+function! dtagui#CloseTitle(line)
+    let index = a:line - 1
+    let depth = s:GetDepth(s:displaylist[index]) + 1
+    let s:displaylist[index] = substitute(s:displaylist[index], '\v^\s*\-', '+', '')
+
+    let tmplist = s:displaylist[index+1:]
+    let cnt = 1
+    for tmp in tmplist
+        if (s:GetDepth(tmp) + 1) <= depth
+            break
+        endif
+        let cnt += 1
+    endfor
+    let s:displaylist = s:Remove(s:displaylist, index + 1, index + cnt)
+    let s:titlelist = s:Remove(s:titlelist, index + 1, index + cnt)
     call dtagui#RefreshUI()
 endfunction
