@@ -77,13 +77,8 @@ endfunction
 " Function: ClassifyTags
 " get classified tags based on filetype
 function! s:ClassifyTags(tagslist)
-    if g:filetype == 'vim'
-        let s:classifiedtags = vimtag#GetClassifiedTags(a:tagslist)
-    elseif g:filetype == 'cpp'
-        let s:classifiedtags = cpptag#GetClassifiedTags(a:tagslist)
-    else
-        return
-    endif
+    let ClassifiedFunc = function(g:filetype . 'tag#GetClassifiedTags', [a:tagslist])
+    let s:classifiedtags = ClassifiedFunc()
 endfunction
 
 " Function: ResetDisplayList
