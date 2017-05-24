@@ -108,7 +108,7 @@ function! s:RefreshTags()
         let fname = fnamemodify(bufname('%'), ':p')
         
         "file exist and not directory
-        if getfsize(fname) != -1 && getfsize(fname) != 0 && bufname('') != g:filename
+        if getfsize(fname) != -1 && getfsize(fname) != 0
             call win_gotoid(win_getid(bufwinnr('__TagList__')))
             let tags = s:GenerateTags(fname)
             let s:tagslist = []
