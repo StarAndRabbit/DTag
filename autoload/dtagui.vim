@@ -77,8 +77,10 @@ endfunction
 " Function: ClassifyTags
 " get classified tags based on filetype
 function! s:ClassifyTags(tagslist)
-    let ClassifiedFunc = function(g:filetype . 'tag#GetClassifiedTags', [a:tagslist])
-    let s:classifiedtags = ClassifiedFunc()
+    if !empty(g:filetype)
+        let ClassifiedFunc = function(g:filetype . 'tag#GetClassifiedTags', [a:tagslist])
+        let s:classifiedtags = ClassifiedFunc()
+    endif
 endfunction
 
 " Function: ResetDisplayList
@@ -162,9 +164,26 @@ function! s:SetDepth(str, depth)
     endwhile
     return newstr
 endfunction
-    
 
-function! dtagui#OpenTitle(line)
+function! s:IsTitle(line)
+    let index = a:line - 1
+    if match(s:displaylist[index], '\v\s*[\+\-]') == -1
+        return 0
+    else
+        return 1
+    endif
+endfunction
+
+function! s:IsTitleOpened(line)
+    let index = a:line -1
+    if match(s:displaylist[index], '\v\s*\-') == -1
+        return 0
+    else
+        return 1
+    endif
+endfunction
+
+function! s:OpenTitle(line)
     let index = a:line - 1
     let depth = s:GetDepth(s:displaylist[index]) + 1
     let s:displaylist[index] = substitute(s:displaylist[index], '\v^\s*\+', '-', '')
@@ -195,7 +214,7 @@ function! dtagui#OpenTitle(line)
     call dtagui#RefreshUI()
 endfunction
 
-function! dtagui#CloseTitle(line)
+function! s:CloseTitle(line)
     let index = a:line - 1
     let depth = s:GetDepth(s:displaylist[index]) + 1
     let s:displaylist[index] = substitute(s:displaylist[index], '\v^\s*\-', '+', '')
@@ -211,4 +230,12 @@ function! dtagui#CloseTitle(line)
     let s:displaylist = s:Remove(s:displaylist, index + 1, index + cnt)
     let s:titlelist = s:Remove(s:titlelist, index + 1, index + cnt)
     call dtagui#RefreshUI()
+endfunction
+
+function! dtagui#ToggleTitle(line)
+    if s:IsTitleOpened(a:line) == 0
+        call s:OpenTitle(a:line)
+    else
+        call s:CloseTitle(a:line)
+    endif
 endfunction
