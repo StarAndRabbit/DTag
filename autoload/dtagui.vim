@@ -1,3 +1,6 @@
+" a dictionary content origin tags
+let s:origintags = {}
+
 " a dictionary content classified tags
 let s:classifiedtags = {}
 
@@ -89,12 +92,21 @@ function! s:ResetDisplayList()
     let s:displaylist = []
     let s:titlelist = []
     let s:classifiedtags = {}
+    let s:origintags = {}
 endfunction
+
+function! s:InitOriginTags(tagslist)
+    for tag in a:tagslist
+	let s:origintags[tag.name] = tag
+    endfor
+endfunction
+
 
 " Function: GenerateDisplayList
 " from classified tags generate display list
 function! dtagui#GenerateDisplayList(tagslist)
     call s:ResetDisplayList()
+    call s:InitOriginTags(a:tagslist)
     call s:ClassifyTags(a:tagslist)
     let titles = keys(s:classifiedtags)
     for title in titles
@@ -238,4 +250,13 @@ function! dtagui#ToggleTitle(line)
     else
         call s:CloseTitle(a:line)
     endif
+endfunction
+
+function! s:GetTagLine(tagname)
+    return s:origintags[a:tagname]['line']
+endfunction
+
+function! dtagui#JumpToTag(line)
+    let tagline = s:GetTagLine(getline(a:line))
+    call win_gotoid(win_getid(bufwinnr(g:filename)))
 endfunction
