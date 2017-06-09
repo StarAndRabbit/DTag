@@ -244,7 +244,7 @@ function! s:CloseTitle(line)
     call dtagui#RefreshUI()
 endfunction
 
-function! dtagui#ToggleTitle(line)
+function! s:ToggleTitle(line)
     if s:IsTitleOpened(a:line) == 0
         call s:OpenTitle(a:line)
     else
@@ -253,10 +253,20 @@ function! dtagui#ToggleTitle(line)
 endfunction
 
 function! s:GetTagLine(tagname)
-    return s:origintags[a:tagname]['line']
+    return (s:origintags[substitute(a:tagname, '\v^\s*', '', '')])['line']
 endfunction
 
-function! dtagui#JumpToTag(line)
+function! s:JumpToTag(line)
     let tagline = s:GetTagLine(getline(a:line))
     call win_gotoid(win_getid(bufwinnr(g:filename)))
+    call setpos('.', [0, tagline, 0])
+    normal zz
+endfunction
+
+function! dtagui#PressEnter(line)
+    if s:IsTitle(a:line) == 0
+	call s:JumpToTag(a:line)
+    else
+	call s:ToggleTitle(a:line)
+    endif
 endfunction

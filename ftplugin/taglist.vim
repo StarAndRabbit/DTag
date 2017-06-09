@@ -1,1 +1,1 @@
-nnoremap <buffer> <silent> <enter> :call dtagui#ToggleTitle(line('.'))<enter>
+nnoremap <buffer> <silent> <enter> :call dtagui#PressEnter(line('.'))<enter>
